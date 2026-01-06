@@ -1,0 +1,54 @@
+{
+  "name": "@mixedbread/ai-sdk",
+  "version": "0.0.1",
+  "description": "Mixedbread AI SDK tools for Vercel AI SDK - search and ingest tools",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "test": "tsx --env-file=.env src/test.ts",
+    "prepublishOnly": "pnpm build"
+  },
+  "keywords": [
+    "ai",
+    "ai-sdk",
+    "tools",
+    "mixedbread",
+    "search",
+    "ingest",
+    "embeddings",
+    "rag"
+  ],
+  "author": "Mixedbread",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mixedbread-ai/ai-sdk"
+  },
+  "peerDependencies": {
+    "ai": ">=5.0.0",
+    "zod": ">=3.0.0"
+  },
+  "dependencies": {
+    "@mixedbread/sdk": "^0.46.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ai": "^5.0.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "zod": "^3.24.0"
+  },
+  "packageManager": "pnpm@10.8.0"
+}
