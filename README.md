@@ -1,6 +1,7 @@
 # @mixedbread/ai-sdk
 
-Mixedbread AI SDK tools for the [Vercel AI SDK](https://ai-sdk.dev). Provides tools for web search, semantic search, and document ingestion.
+Mixedbread AI SDK tools for the [Vercel AI SDK](https://ai-sdk.dev). Provides
+tools for web search, semantic search, and document ingestion.
 
 ## Installation
 
@@ -13,10 +14,10 @@ pnpm install @mixedbread/ai-sdk
 Add your Mixedbread API key to your environment:
 
 ```bash
-MIXEDBREAD_API_KEY=your_api_key_here
+MXBAI_API_KEY=your_api_key_here
 ```
 
-Get your API key from the [Mixedbread Dashboard](https://mixedbread.com/dashboard).
+Get your API key from the [Mixedbread Platform](https://platform.mixedbread.com/).
 
 ## Tools
 
