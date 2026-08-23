@@ -1,17 +1,15 @@
 # @mixedbread/ai-sdk
 
-Mixedbread AI SDK tools for the [Vercel AI SDK](https://ai-sdk.dev). Provides
-tools for web search, semantic search, and document ingestion.
+Mixedbread provider for the [Vercel AI SDK](https://ai-sdk.dev). Gives you the
+`toast-1` language model with server-side retrieval over your Stores.
 
 ## Installation
 
 ```bash
-pnpm install @mixedbread/ai-sdk
+pnpm add @mixedbread/ai-sdk ai
 ```
 
 ## Setup
-
-Add your Mixedbread API key to your environment:
 
 ```bash
 MXBAI_API_KEY=your_api_key_here
@@ -19,115 +17,172 @@ MXBAI_API_KEY=your_api_key_here
 
 Get your API key from the [Mixedbread Platform](https://platform.mixedbread.com/).
 
-## Tools
-
-### Search Tool
-
-Search through documents in a Mixedbread knowledge base.
+## Provider
 
 ```typescript
 import { generateText } from "ai";
-import { searchTool } from "@mixedbread/ai-sdk";
+import { mixedbread } from "@mixedbread/ai-sdk";
 
 const { text } = await generateText({
-  model: yourModel,
-  prompt: "What are the key features of our product?",
+  model: mixedbread("toast-1"),
+  prompt: "What is a sourdough starter?",
+});
+```
+
+`mixedbread()` defaults to `toast-1`, so `mixedbread()` and
+`mixedbread("toast-1")` are the same model.
+
+### AI SDK version
+
+| Your `ai` version | Import from |
+|-------------------|-------------|
+| `ai@6` (spec v3)  | `@mixedbread/ai-sdk` |
+| `ai@7` (spec v4)  | `@mixedbread/ai-sdk/v4` |
+
+Both entry points expose the same `createMixedbread`, `mixedbread`, and
+`mixedbread.tools` API and hit the same endpoint; only the language model
+specification version differs.
+
+```typescript
+import { mixedbread } from "@mixedbread/ai-sdk/v4";
+```
+
+### Custom instance
+
+```typescript
+import { createMixedbread } from "@mixedbread/ai-sdk";
+
+const mixedbread = createMixedbread({
+  apiKey: process.env.MXBAI_API_KEY,
+  baseURL: "https://api.mixedbread.com/v1",
+  headers: { "X-Team": "search" },
+});
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `apiKey` | `string` | API key. Defaults to `MXBAI_API_KEY`, then `MIXEDBREAD_API_KEY` |
+| `baseURL` | `string` | API base URL (default: `https://api.mixedbread.com/v1`) |
+| `headers` | `Record<string, string>` | Extra headers sent with every request |
+| `fetch` | `FetchFunction` | Custom fetch, e.g. for testing or proxying |
+| `generateId` | `() => string` | ID generator for tool calls that arrive without one |
+
+## Hosted store tools
+
+`toast-1` can search your Stores server-side: you declare the tool, Mixedbread
+runs it inside the completion and streams the calls and results back. There is
+no `execute` to write and no extra round trip.
+
+```typescript
+import { generateText } from "ai";
+import { mixedbread } from "@mixedbread/ai-sdk";
+
+const { text, staticToolCalls } = await generateText({
+  model: mixedbread("toast-1"),
+  prompt: "What does our handbook say about on-call? Cite your sources.",
   tools: {
-    search: searchTool({
-      storeIdentifiers: ["your-store-id"],
-      topK: 5,
+    storeSearch: mixedbread.tools.storeSearch({
+      storeIdentifiers: ["handbook"],
+      maxNumResults: 10,
+      citations: true,
     }),
   },
 });
 ```
 
-#### Options
+| Tool | Purpose | Options |
+|------|---------|---------|
+| `storeSearch` | Semantic search over stores | `storeIdentifiers`, `maxNumResults`, `filters`, `scoreThreshold`, `citations` |
+| `storeGrep` | Regex match over chunk text | `storeIdentifiers`, `maxNumResults`, `filters`, `citations` |
+| `storeListChunks` | Metadata-driven chunk listing | `storeIdentifiers`, `maxNumResults`, `filters`, `citations` |
+| `storeMetadataFacets` | Which metadata fields and values exist | `storeIdentifiers`, `filters`, `maxValuesPerField` |
+| `listStores` | Paginated listing of your stores | `limit` |
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `apiKey` | `string` | Mixedbread API key (defaults to `MIXEDBREAD_API_KEY` env var) |
-| `storeIdentifiers` | `string[]` | Array of store IDs to search in |
-| `topK` | `number` | Number of results to return (default: 5) |
+Leave `storeIdentifiers` off to let the model pick a store per call — pair that
+with `listStores` so it can discover what it may name.
 
-### Web Search Tool
+Hosted executions arrive as regular AI SDK tool calls and tool results marked
+`providerExecuted: true`, interleaved with the model's reasoning in the order
+they ran.
 
-Search the internet using Mixedbread's web search capabilities.
+## Function tools
+
+Client-executed tools work as they do with any other provider. The completion
+ends with `finish_reason: "tool_calls"`; run the functions and send the results
+back on the next call.
 
 ```typescript
-import { generateText } from "ai";
-import { webSearchTool } from "@mixedbread/ai-sdk";
+import { generateText, tool } from "ai";
+import { z } from "zod";
+import { mixedbread } from "@mixedbread/ai-sdk";
 
-const { text } = await generateText({
-  model: yourModel,
-  prompt: "What are the latest developments in AI?",
+await generateText({
+  model: mixedbread("toast-1"),
+  prompt: "What is the weather in Berlin?",
   tools: {
-    webSearch: webSearchTool({
-      topK: 5,
+    getWeather: tool({
+      description: "Get the weather for a city",
+      inputSchema: z.object({ city: z.string() }),
+      execute: async ({ city }) => ({ city, celsius: 21 }),
     }),
   },
 });
 ```
 
-#### Options
+## Provider options
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `apiKey` | `string` | Mixedbread API key (defaults to `MIXEDBREAD_API_KEY` env var) |
-| `topK` | `number` | Number of results to return (default: 5) |
-
-### Ingest Tool
-
-Ingest text content into a Mixedbread knowledge base.
+Mixedbread extensions to the Chat Completions API are passed per call under
+`providerOptions.mixedbread`.
 
 ```typescript
-import { generateText } from "ai";
-import { ingestTool } from "@mixedbread/ai-sdk";
-
-const { text } = await generateText({
-  model: yourModel,
-  prompt: "Save this meeting summary to our knowledge base: ...",
-  tools: {
-    ingest: ingestTool({
-      storeIdentifier: "your-store-id",
-    }),
+await generateText({
+  model: mixedbread("toast-1"),
+  prompt: "And what about the escalation path?",
+  providerOptions: {
+    mixedbread: {
+      previousCompletionId: "cmpl_abc123",
+      store: true,
+      include: ["store_search_call.results"],
+    },
   },
 });
 ```
 
-#### Options
-
 | Option | Type | Description |
 |--------|------|-------------|
-| `apiKey` | `string` | Mixedbread API key (defaults to `MIXEDBREAD_API_KEY` env var) |
-| `storeIdentifier` | `string` | Store ID to ingest content into |
+| `store` | `boolean` | Persist the completion for later retrieval (API default: `true`) |
+| `previousCompletionId` | `string` | Continue a stored conversation and restore its full model context |
+| `terminalToolName` | `string` | Function tool whose answer argument closes the stored transcript |
+| `maxToolCalls` | `number` | Cap on hosted retrieval calls in one completion |
+| `parallelToolCalls` | `boolean` | Allow several tool calls per turn (default `true`) |
+| `metadata` | `Record<string, string>` | Arbitrary string metadata stored with the completion |
+| `include` | `string[]` | Extra response fields, e.g. `store_search_call.results` |
 
-## Full Example
+### Provider metadata
 
-```typescript
-import { generateText } from "ai";
-import { searchTool, webSearchTool, ingestTool } from "@mixedbread/ai-sdk";
+Every result carries `providerMetadata.mixedbread`:
 
-const storeId = "your-store-id";
+| Field | Description |
+|-------|-------------|
+| `completionId` | ID to pass as `previousCompletionId` on the next turn |
+| `title` | Short display title generated for the conversation |
+| `toolTickets` | One short-lived ticket per client-executed tool call; send it as the `X-Mxbai-Tool-Ticket` header on the store search or grep you run for that call to bill at the discounted agent rate |
 
-const { text } = await generateText({
-  model: yourModel,
-  prompt: "Search for information about our API and summarize it",
-  tools: {
-    search: searchTool({
-      storeIdentifiers: [storeId],
-      topK: 5,
-    }),
-    webSearch: webSearchTool({
-      topK: 5,
-    }),
-    ingest: ingestTool({
-      storeIdentifier: storeId,
-    }),
-  },
-  maxSteps: 3,
-});
+## Unsupported settings
 
-console.log(text);
+`toast-1` ignores `topK`, `seed`, `stopSequences`, `presencePenalty`,
+`frequencyPenalty`, and JSON `responseFormat`. Passing them produces a warning
+on the result rather than an error. Image and file prompt parts are rejected —
+`toast-1` is text-in, text-out.
+
+## Development
+
+```bash
+pnpm install
+pnpm typecheck
+pnpm test          # unit tests against a mocked transport
+pnpm build
+pnpm smoke         # live check, needs .env with MXBAI_API_KEY
 ```
 
 ## Resources
