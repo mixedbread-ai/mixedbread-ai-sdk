@@ -1,8 +1,26 @@
-export { searchTool } from "./tools/search";
-export type { SearchToolOptions } from "./tools/search";
+export {
+  createMixedbread,
+  mixedbread,
+  DEFAULT_MIXEDBREAD_BASE_URL,
+} from "./provider/mixedbread-provider";
+export type {
+  MixedbreadProvider,
+  MixedbreadProviderSettings,
+} from "./provider/mixedbread-provider";
 
-export { ingestTool } from "./tools/ingest";
-export type { IngestToolOptions } from "./tools/ingest";
+export { MixedbreadChatLanguageModel } from "./provider/mixedbread-chat-language-model";
+export type { MixedbreadChatConfig } from "./provider/mixedbread-chat-language-model";
 
-export { webSearchTool } from "./tools/web-search";
-export type { WebSearchToolOptions } from "./tools/web-search";
+export type {
+  MixedbreadChatModelId,
+  MixedbreadProviderOptions,
+} from "./provider/mixedbread-chat-options";
+
+export { mixedbreadTools } from "./provider/mixedbread-hosted-tools";
+export type {
+  MixedbreadListStoresArgs,
+  MixedbreadStoreGrepArgs,
+  MixedbreadStoreListChunksArgs,
+  MixedbreadStoreMetadataFacetsArgs,
+  MixedbreadStoreSearchArgs,
+} from "./provider/mixedbread-hosted-tools";

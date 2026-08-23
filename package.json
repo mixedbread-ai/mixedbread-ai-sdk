@@ -1,33 +1,40 @@
 {
   "name": "@mixedbread/ai-sdk",
   "version": "0.0.1",
-  "description": "Mixedbread AI SDK tools for Vercel AI SDK - search and ingest tools",
+  "description": "Mixedbread provider for the Vercel AI SDK - the toast-1 language model with hosted store retrieval",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./v4": {
+      "types": "./dist/v4/index.d.ts",
+      "import": "./dist/v4/index.js"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean",
-    "test": "tsx --env-file=.env src/test.ts",
-    "prepublishOnly": "pnpm build"
+    "build": "tsup src/index.ts src/v4/index.ts --format esm --dts --clean",
+    "test": "vitest run",
+    "prepublishOnly": "pnpm build",
+    "typecheck": "tsc --noEmit",
+    "test:watch": "vitest",
+    "smoke": "tsx --env-file=.env src/smoke.ts"
   },
   "keywords": [
     "ai",
     "ai-sdk",
-    "tools",
+    "provider",
+    "toast-1",
     "mixedbread",
-    "search",
-    "ingest",
-    "embeddings",
-    "rag"
+    "llm",
+    "rag",
+    "search"
   ],
   "author": "Mixedbread",
   "license": "MIT",
@@ -36,19 +43,23 @@
     "url": "https://github.com/mixedbread-ai/ai-sdk"
   },
   "peerDependencies": {
-    "ai": ">=5.0.0",
-    "zod": ">=3.0.0"
+    "zod": "^3.25.76 || ^4.1.8"
   },
   "dependencies": {
-    "@mixedbread/sdk": "^0.46.0"
+    "@ai-sdk/provider": "^3.0.10",
+    "@ai-sdk/provider-utils": "^4.0.27",
+    "@ai-sdk/provider-utils-v5": "npm:@ai-sdk/provider-utils@^5.0.29",
+    "@ai-sdk/provider-v4": "npm:@ai-sdk/provider@^4.0.7"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "ai": "^5.0.0",
+    "ai": "^6.0.0",
     "tsup": "^8.0.0",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
-    "zod": "^3.24.0"
+    "vitest": "^3.0.0",
+    "zod": "^3.25.76",
+    "ai-v7": "npm:ai@^7.0.77"
   },
   "packageManager": "pnpm@10.8.0"
 }
