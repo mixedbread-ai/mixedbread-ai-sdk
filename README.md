@@ -213,6 +213,54 @@ generated notes.
 Every push and pull request against `main` runs
 [CI](.github/workflows/ci.yml) (typecheck, tests, build) on Node 20, 22 and 24.
 
+### npm authentication
+
+npm's trusted publishing is configured per package on npmjs.com, and a package
+has to exist before it can be configured. The first publish therefore needs a
+token, and later ones do not.
+
+**Phase 1 — bootstrap.** Create a granular access token on npmjs.com with
+read/write on the `@mixedbread` scope, and add it as the `NPM_TOKEN` repository
+secret. The workflow authenticates with it and still generates provenance;
+provenance comes from `--provenance` plus `id-token: write`, not from trusted
+publishing.
+
+**Phase 2 — trusted publishing.** Once the package exists, open it on npmjs.com,
+add a trusted publisher for GitHub Actions with organization `mixedbread-ai`,
+repository `mixedbread-ai-sdk` and workflow `release.yml` (no environment).
+Configurations created after May 2026 also need `npm publish` selected under
+allowed actions. Then delete the `NPM_TOKEN` secret and drop the
+`env: NODE_AUTH_TOKEN` block from the publish step.
+
+Releases then authenticate over OIDC with no long-lived secret, which is where
+[mgrep](https://github.com/mixedbread-ai/mgrep) ended up. npm is separately
+restricting tokens that bypass 2FA for direct publishing, so phase 2 is the
+intended destination rather than an optimisation. Note that trusted publishing
+requires npm >= 11.5.1 — the release workflow runs Node 24 for that reason.
+### Spec version dist-tags
+
+`latest` always points at the newest Language Model Specification the package
+supports. Older specifications stay installable on a dist-tag rather than a
+subpath, which is how `@ai-sdk/*` and most community providers handle it:
+
+| Tag | Spec | `ai` version |
+|-----|------|--------------|
+| `latest` | v4 | `ai@7` |
+| `ai-v6` | v3 | `ai@6` |
+
+The `ai-v6` tag is pinned to `0.1.0` and must not be moved by a normal release —
+`npm version` and the release workflow only ever update `latest`. Repointing it
+would hand spec-v4 code to `ai@6` users.
+
+Dist-tags are set by hand, not by CI, so they need npm credentials on your own
+machine. Publishing runs on `NPM_TOKEN` inside Actions, which does not log you
+in locally — `npm dist-tag add` fails with `E401` until you run `npm login`:
+
+```bash
+npm login
+npm dist-tag add @mixedbread/ai-sdk-provider@0.1.0 ai-v6
+```
+
 ## Resources
 
 - [Mixedbread Documentation](https://mixedbread.com/docs)
