@@ -38,9 +38,19 @@
   ],
   "author": "Mixedbread",
   "license": "MIT",
+  "homepage": "https://github.com/mixedbread-ai/mixedbread-ai-sdk#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mixedbread-ai/ai-sdk"
+    "url": "git+https://github.com/mixedbread-ai/mixedbread-ai-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mixedbread-ai/mixedbread-ai-sdk/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "peerDependencies": {
     "zod": "^3.25.76 || ^4.1.8"
