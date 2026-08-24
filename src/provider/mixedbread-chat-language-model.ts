@@ -619,11 +619,16 @@ export class MixedbreadChatLanguageModelBase {
     title?: string | null;
     toolTickets?: MixedbreadToolTicket[] | null;
   }): SharedV4ProviderMetadata {
+    // The API reports no tickets as `tool_tickets: []` on a completion but omits
+    // the field entirely while streaming. Collapse both to null so the shape does
+    // not depend on which call was used, and so a falsy check works.
+    const tickets = toolTickets != null && toolTickets.length > 0 ? toolTickets : null;
+
     return {
       mixedbread: {
         completionId: completionId ?? null,
         title: title ?? null,
-        toolTickets: (toolTickets ?? null) as unknown as JSONValue,
+        toolTickets: tickets as unknown as JSONValue,
       },
     };
   }
