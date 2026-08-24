@@ -34,18 +34,25 @@ const { text } = await generateText({
 
 ### AI SDK version
 
-| Your `ai` version | Import from |
-|-------------------|-------------|
-| `ai@6` (spec v3)  | `@mixedbread/ai-sdk-provider` |
-| `ai@7` (spec v4)  | `@mixedbread/ai-sdk-provider/v4` |
+This package implements Language Model Specification **V4**, which is what
+`ai@7` (the current `latest`) uses.
 
-Both entry points expose the same `createMixedbread`, `mixedbread`, and
-`mixedbread.tools` API and hit the same endpoint; only the language model
-specification version differs.
+| Your `ai` version | Install |
+|-------------------|---------|
+| `ai@7` (spec v4)  | `@mixedbread/ai-sdk-provider` |
+| `ai@6` (spec v3)  | `@mixedbread/ai-sdk-provider@ai-v6` |
 
-```typescript
-import { mixedbread } from "@mixedbread/ai-sdk-provider/v4";
+```bash
+# ai@7, the default
+pnpm add @mixedbread/ai-sdk-provider ai
+
+# still on ai@6
+pnpm add @mixedbread/ai-sdk-provider@ai-v6 ai@6
 ```
+
+Both lines expose the same `createMixedbread`, `mixedbread` and
+`mixedbread.tools` API and hit the same endpoint; only the specification
+version differs. The `ai-v6` line is maintenance-only.
 
 ### Custom instance
 

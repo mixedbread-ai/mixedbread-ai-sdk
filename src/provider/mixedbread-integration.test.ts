@@ -1,9 +1,7 @@
 import type { FetchFunction } from "@ai-sdk/provider-utils";
 import { generateText, streamText } from "ai";
-import { generateText as generateTextV7 } from "ai-v7";
 import { describe, expect, it } from "vitest";
 import { createMixedbread } from "./mixedbread-provider";
-import { createMixedbread as createMixedbreadV4 } from "../v4/mixedbread-provider";
 
 const completion = {
   id: "cmpl_1",
@@ -59,7 +57,7 @@ function sseFetch(events: unknown[]): FetchFunction {
   };
 }
 
-describe("ai@6 (spec v3)", () => {
+describe("ai@7 (spec v4)", () => {
   const mixedbread = createMixedbread({ apiKey: "test-key", fetch: jsonFetch });
 
   it("generates text through generateText", async () => {
@@ -69,6 +67,7 @@ describe("ai@6 (spec v3)", () => {
       tools: { storeSearch: mixedbread.tools.storeSearch({ storeIdentifiers: ["docs"] }) },
     });
 
+    expect(mixedbread("toast-1").specificationVersion).toBe("v4");
     expect(result.text).toBe("Sourdough.");
     expect(result.reasoningText).toBe("Checking the store.");
     expect(result.usage.inputTokens).toBe(12);
@@ -102,25 +101,5 @@ describe("ai@6 (spec v3)", () => {
 
     expect(chunks.join("")).toBe("Sourdough.");
     expect(await result.finishReason).toBe("stop");
-  });
-});
-
-describe("ai@7 (spec v4)", () => {
-  const mixedbread = createMixedbreadV4({ apiKey: "test-key", fetch: jsonFetch });
-
-  it("generates text through generateText", async () => {
-    const result = await generateTextV7({
-      model: mixedbread("toast-1"),
-      prompt: "Which bread?",
-      tools: { storeSearch: mixedbread.tools.storeSearch({ storeIdentifiers: ["docs"] }) },
-    });
-
-    expect(mixedbread("toast-1").specificationVersion).toBe("v4");
-    expect(result.text).toBe("Sourdough.");
-    expect(result.reasoningText).toBe("Checking the store.");
-    expect(result.staticToolCalls.map((call) => call.toolName)).toStrictEqual([
-      "storeSearch",
-    ]);
-    expect(result.providerMetadata?.mixedbread.title).toBe("Bread question");
   });
 });

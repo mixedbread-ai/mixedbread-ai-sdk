@@ -1,6 +1,6 @@
 import type {
-  LanguageModelV3CallOptions,
-  SharedV3Warning,
+  LanguageModelV4CallOptions,
+  SharedV4Warning,
 } from "@ai-sdk/provider";
 import { validateTypes } from "@ai-sdk/provider-utils";
 import { z } from "zod/v4";
@@ -47,14 +47,14 @@ export async function prepareTools({
   tools,
   toolChoice,
 }: {
-  tools: LanguageModelV3CallOptions["tools"];
-  toolChoice: LanguageModelV3CallOptions["toolChoice"];
+  tools: LanguageModelV4CallOptions["tools"];
+  toolChoice: LanguageModelV4CallOptions["toolChoice"];
 }): Promise<{
   tools: MixedbreadWireTool[] | undefined;
   toolChoice: MixedbreadWireToolChoice | undefined;
-  toolWarnings: SharedV3Warning[];
+  toolWarnings: SharedV4Warning[];
 }> {
-  const toolWarnings: SharedV3Warning[] = [];
+  const toolWarnings: SharedV4Warning[] = [];
 
   if (tools == null || tools.length === 0) {
     return { tools: undefined, toolChoice: undefined, toolWarnings };
