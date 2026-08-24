@@ -213,6 +213,21 @@ generated notes.
 Every push and pull request against `main` runs
 [CI](.github/workflows/ci.yml) (typecheck, tests, build) on Node 20, 22 and 24.
 
+### Spec version dist-tags
+
+`latest` always points at the newest Language Model Specification the package
+supports. Older specifications stay installable on a dist-tag rather than a
+subpath, which is how `@ai-sdk/*` and most community providers handle it:
+
+| Tag | Spec | `ai` version |
+|-----|------|--------------|
+| `latest` | v4 | `ai@7` |
+| `ai-v6` | v3 | `ai@6` |
+
+The `ai-v6` tag is pinned to `0.1.0` and must not be moved by a normal release —
+`npm version` and the release workflow only ever update `latest`. Repointing it
+would hand spec-v4 code to `ai@6` users.
+
 ## Resources
 
 - [Mixedbread Documentation](https://mixedbread.com/docs)
