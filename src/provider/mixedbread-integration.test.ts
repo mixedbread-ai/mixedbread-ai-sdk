@@ -103,3 +103,56 @@ describe("ai@7 (spec v4)", () => {
     expect(await result.finishReason).toBe("stop");
   });
 });
+
+describe("hosted tool factories", () => {
+  const mixedbread = createMixedbread({ apiKey: "test-key", fetch: jsonFetch });
+
+  it("can be declared with no arguments", () => {
+    // the underlying provider-utils factory destructures its argument, so a bare
+    // call used to throw "Cannot destructure property 'onInputStart'"
+    expect(() => mixedbread.tools.listStores()).not.toThrow();
+    expect(() => mixedbread.tools.storeSearch()).not.toThrow();
+    expect(() => mixedbread.tools.storeGrep()).not.toThrow();
+    expect(() => mixedbread.tools.storeListChunks()).not.toThrow();
+    expect(() => mixedbread.tools.storeMetadataFacets()).not.toThrow();
+  });
+});
+
+describe("default tools", () => {
+  it("sends no tools when none are declared", async () => {
+    let body: Record<string, unknown> | undefined;
+    const capture: FetchFunction = async (url, init) => {
+      body = JSON.parse(String(init?.body));
+      return jsonFetch(url, init);
+    };
+    const mixedbread = createMixedbread({ apiKey: "test-key", fetch: capture });
+
+    await generateText({ model: mixedbread("toast-1"), prompt: "Which bread?" });
+
+    expect(body).not.toHaveProperty("tools");
+    expect(body).not.toHaveProperty("tool_choice");
+  });
+});
+
+describe("toolTickets", () => {
+  it("is null for both an empty array and an absent field", async () => {
+    const empty: FetchFunction = async () =>
+      new Response(JSON.stringify({ ...completion, tool_tickets: [] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    const mixedbread = createMixedbread({ apiKey: "test-key", fetch: empty });
+    const withEmpty = await generateText({
+      model: mixedbread("toast-1"),
+      prompt: "Which bread?",
+    });
+    expect(withEmpty.providerMetadata?.mixedbread.toolTickets).toBeNull();
+
+    const absent = createMixedbread({ apiKey: "test-key", fetch: jsonFetch });
+    const withAbsent = await generateText({
+      model: absent("toast-1"),
+      prompt: "Which bread?",
+    });
+    expect(withAbsent.providerMetadata?.mixedbread.toolTickets).toBeNull();
+  });
+});

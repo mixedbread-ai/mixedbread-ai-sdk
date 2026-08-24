@@ -51,7 +51,7 @@ export type MixedbreadListStoresArgs = {
   limit?: number;
 };
 
-const storeSearch = createProviderExecutedToolFactory<
+const storeSearchFactory = createProviderExecutedToolFactory<
   z.infer<typeof metadataFilterInputSchema> & { queries?: string[] },
   z.infer<typeof hostedToolCallOutputSchema>,
   MixedbreadStoreSearchArgs
@@ -63,7 +63,7 @@ const storeSearch = createProviderExecutedToolFactory<
   outputSchema: hostedToolCallOutputSchema,
 });
 
-const storeGrep = createProviderExecutedToolFactory<
+const storeGrepFactory = createProviderExecutedToolFactory<
   z.infer<typeof metadataFilterInputSchema> & {
     pattern?: string;
     case_sensitive?: boolean;
@@ -79,7 +79,7 @@ const storeGrep = createProviderExecutedToolFactory<
   outputSchema: hostedToolCallOutputSchema,
 });
 
-const storeListChunks = createProviderExecutedToolFactory<
+const storeListChunksFactory = createProviderExecutedToolFactory<
   z.infer<typeof metadataFilterInputSchema> & {
     rank_by?: string;
     direction?: "asc" | "desc";
@@ -95,7 +95,7 @@ const storeListChunks = createProviderExecutedToolFactory<
   outputSchema: hostedToolCallOutputSchema,
 });
 
-const storeMetadataFacets = createProviderExecutedToolFactory<
+const storeMetadataFacetsFactory = createProviderExecutedToolFactory<
   { store?: string | null },
   z.infer<typeof hostedToolCallOutputSchema>,
   MixedbreadStoreMetadataFacetsArgs
@@ -105,7 +105,7 @@ const storeMetadataFacets = createProviderExecutedToolFactory<
   outputSchema: hostedToolCallOutputSchema,
 });
 
-const listStores = createProviderExecutedToolFactory<
+const listStoresFactory = createProviderExecutedToolFactory<
   { cursor?: string | null },
   z.infer<typeof hostedToolCallOutputSchema>,
   MixedbreadListStoresArgs
@@ -115,12 +115,17 @@ const listStores = createProviderExecutedToolFactory<
   outputSchema: hostedToolCallOutputSchema,
 });
 
+// Args default to {} so a tool can be declared with no options, as the README
+// suggests for letting the model pick a store. The underlying factory
+// destructures its argument and would otherwise throw on a bare call.
 export const mixedbreadTools = {
-  storeSearch,
-  storeGrep,
-  storeListChunks,
-  storeMetadataFacets,
-  listStores,
+  storeSearch: (args: MixedbreadStoreSearchArgs = {}) => storeSearchFactory(args),
+  storeGrep: (args: MixedbreadStoreGrepArgs = {}) => storeGrepFactory(args),
+  storeListChunks: (args: MixedbreadStoreListChunksArgs = {}) =>
+    storeListChunksFactory(args),
+  storeMetadataFacets: (args: MixedbreadStoreMetadataFacetsArgs = {}) =>
+    storeMetadataFacetsFactory(args),
+  listStores: (args: MixedbreadListStoresArgs = {}) => listStoresFactory(args),
 };
 
 export const mixedbreadProviderToolNames = {
