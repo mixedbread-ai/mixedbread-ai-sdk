@@ -1,6 +1,6 @@
 {
   "name": "@mixedbread/ai-sdk-provider",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Mixedbread provider for the Vercel AI SDK - the toast-1 language model with hosted store retrieval",
   "type": "module",
   "sideEffects": false,
@@ -11,10 +11,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./v4": {
-      "types": "./dist/v4/index.d.ts",
-      "import": "./dist/v4/index.js"
     }
   },
   "files": [
@@ -23,7 +19,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup src/index.ts src/v4/index.ts --format esm --dts --sourcemap --clean",
+    "build": "tsup src/index.ts --format esm --dts --sourcemap --clean",
     "test": "vitest run",
     "prepublishOnly": "pnpm build",
     "typecheck": "tsc --noEmit",
@@ -60,20 +56,17 @@
     "zod": "^3.25.76 || ^4.1.8"
   },
   "dependencies": {
-    "@ai-sdk/provider": "^3.0.10",
-    "@ai-sdk/provider-utils": "^4.0.27",
-    "@ai-sdk/provider-utils-v5": "npm:@ai-sdk/provider-utils@^5.0.29",
-    "@ai-sdk/provider-v4": "npm:@ai-sdk/provider@^4.0.7"
+    "@ai-sdk/provider": "^4.0.7",
+    "@ai-sdk/provider-utils": "^5.0.29"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "ai": "^6.0.0",
+    "ai": "^7.0.77",
     "tsup": "^8.0.0",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
     "vitest": "^3.0.0",
-    "zod": "^3.25.76",
-    "ai-v7": "npm:ai@^7.0.77"
+    "zod": "^3.25.76"
   },
   "packageManager": "pnpm@10.8.0"
 }

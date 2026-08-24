@@ -1,12 +1,12 @@
 import type {
-  LanguageModelV3Prompt,
-  LanguageModelV3StreamPart,
+  LanguageModelV4Prompt,
+  LanguageModelV4StreamPart,
 } from "@ai-sdk/provider";
 import type { FetchFunction } from "@ai-sdk/provider-utils";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createMixedbread } from "./mixedbread-provider";
 
-const prompt: LanguageModelV3Prompt = [
+const prompt: LanguageModelV4Prompt = [
   { role: "user", content: [{ type: "text", text: "What is in the store?" }] },
 ];
 
@@ -51,9 +51,9 @@ function sseFetch(events: unknown[]): FetchFunction {
 }
 
 async function collect(
-  stream: ReadableStream<LanguageModelV3StreamPart>,
-): Promise<LanguageModelV3StreamPart[]> {
-  const parts: LanguageModelV3StreamPart[] = [];
+  stream: ReadableStream<LanguageModelV4StreamPart>,
+): Promise<LanguageModelV4StreamPart[]> {
+  const parts: LanguageModelV4StreamPart[] = [];
   const reader = stream.getReader();
   while (true) {
     const { done, value } = await reader.read();
@@ -445,7 +445,7 @@ describe("doStream", () => {
     ]);
 
     const finish = parts.at(-1) as Extract<
-      LanguageModelV3StreamPart,
+      LanguageModelV4StreamPart,
       { type: "finish" }
     >;
     expect(finish.finishReason).toStrictEqual({ unified: "stop", raw: "stop" });
@@ -524,7 +524,7 @@ describe("doStream", () => {
       "finish",
     ]);
     const finish = parts.at(-1) as Extract<
-      LanguageModelV3StreamPart,
+      LanguageModelV4StreamPart,
       { type: "finish" }
     >;
     expect(finish.finishReason.unified).toBe("error");

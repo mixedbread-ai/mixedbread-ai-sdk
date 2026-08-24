@@ -1,16 +1,16 @@
 import type {
   JSONObject,
   JSONValue,
-  LanguageModelV3,
-  LanguageModelV3CallOptions,
-  LanguageModelV3Content,
-  LanguageModelV3FinishReason,
-  LanguageModelV3GenerateResult,
-  LanguageModelV3StreamPart,
-  LanguageModelV3StreamResult,
-  LanguageModelV3Usage,
-  SharedV3ProviderMetadata,
-  SharedV3Warning,
+  LanguageModelV4,
+  LanguageModelV4CallOptions,
+  LanguageModelV4Content,
+  LanguageModelV4FinishReason,
+  LanguageModelV4GenerateResult,
+  LanguageModelV4StreamPart,
+  LanguageModelV4StreamResult,
+  LanguageModelV4Usage,
+  SharedV4ProviderMetadata,
+  SharedV4Warning,
 } from "@ai-sdk/provider";
 import {
   combineHeaders,
@@ -67,7 +67,7 @@ const HOSTED_RESULT_FIELDS = [
   "next_cursor",
 ];
 
-function emptyUsage(): LanguageModelV3Usage {
+function emptyUsage(): LanguageModelV4Usage {
   return {
     inputTokens: {
       total: undefined,
@@ -82,7 +82,7 @@ function emptyUsage(): LanguageModelV3Usage {
 
 function convertUsage(
   usage: MixedbreadChatChunk["usage"] | undefined,
-): LanguageModelV3Usage {
+): LanguageModelV4Usage {
   if (usage == null) {
     return emptyUsage();
   }
@@ -144,11 +144,11 @@ export class MixedbreadChatLanguageModelBase {
     return this.config.provider;
   }
 
-  private async getArgs(options: LanguageModelV3CallOptions): Promise<{
+  private async getArgs(options: LanguageModelV4CallOptions): Promise<{
     args: Record<string, unknown>;
-    warnings: SharedV3Warning[];
+    warnings: SharedV4Warning[];
   }> {
-    const warnings: SharedV3Warning[] = [];
+    const warnings: SharedV4Warning[] = [];
 
     for (const setting of [
       "topK",
@@ -207,7 +207,7 @@ export class MixedbreadChatLanguageModelBase {
   }
 
   private toolNameMapping(
-    tools: LanguageModelV3CallOptions["tools"],
+    tools: LanguageModelV4CallOptions["tools"],
   ): ToolNameMapping {
     return createToolNameMapping({
       tools,
@@ -216,8 +216,8 @@ export class MixedbreadChatLanguageModelBase {
   }
 
   async doGenerate(
-    options: LanguageModelV3CallOptions,
-  ): Promise<LanguageModelV3GenerateResult> {
+    options: LanguageModelV4CallOptions,
+  ): Promise<LanguageModelV4GenerateResult> {
     const { args: body, warnings } = await this.getArgs(options);
     const toolNameMapping = this.toolNameMapping(options.tools);
 
@@ -238,7 +238,7 @@ export class MixedbreadChatLanguageModelBase {
     });
 
     const choice = response.choices[0];
-    const content: LanguageModelV3Content[] = [];
+    const content: LanguageModelV4Content[] = [];
 
     const reasoning = choice?.message.reasoning_content ?? "";
     const hostedCalls = [...(response.hosted_tool_calls ?? [])].sort(
@@ -313,8 +313,8 @@ export class MixedbreadChatLanguageModelBase {
   }
 
   async doStream(
-    options: LanguageModelV3CallOptions,
-  ): Promise<LanguageModelV3StreamResult> {
+    options: LanguageModelV4CallOptions,
+  ): Promise<LanguageModelV4StreamResult> {
     const { args, warnings } = await this.getArgs(options);
     const body = { ...args, stream: true };
     const toolNameMapping = this.toolNameMapping(options.tools);
@@ -340,7 +340,7 @@ export class MixedbreadChatLanguageModelBase {
       hasFinished: boolean;
     };
 
-    let finishReason: LanguageModelV3FinishReason = {
+    let finishReason: LanguageModelV4FinishReason = {
       unified: "other",
       raw: undefined,
     };
@@ -362,7 +362,7 @@ export class MixedbreadChatLanguageModelBase {
       stream: response.pipeThrough(
         new TransformStream<
           ParseResult<MixedbreadChatChunk>,
-          LanguageModelV3StreamPart
+          LanguageModelV4StreamPart
         >({
           start(controller) {
             controller.enqueue({ type: "stream-start", warnings });
@@ -618,7 +618,7 @@ export class MixedbreadChatLanguageModelBase {
     completionId?: string | null;
     title?: string | null;
     toolTickets?: MixedbreadToolTicket[] | null;
-  }): SharedV3ProviderMetadata {
+  }): SharedV4ProviderMetadata {
     return {
       mixedbread: {
         completionId: completionId ?? null,
@@ -631,7 +631,7 @@ export class MixedbreadChatLanguageModelBase {
 
 export class MixedbreadChatLanguageModel
   extends MixedbreadChatLanguageModelBase
-  implements LanguageModelV3
+  implements LanguageModelV4
 {
-  readonly specificationVersion = "v3" as const;
+  readonly specificationVersion = "v4" as const;
 }

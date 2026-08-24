@@ -1,4 +1,4 @@
-import type { LanguageModelV3ResponseMetadata } from "@ai-sdk/provider";
+import type { LanguageModelV4ResponseMetadata } from "@ai-sdk/provider";
 
 export function getResponseMetadata({
   id,
@@ -8,7 +8,7 @@ export function getResponseMetadata({
   id?: string | null;
   created?: number | null;
   model?: string | null;
-}): LanguageModelV3ResponseMetadata {
+}): LanguageModelV4ResponseMetadata {
   return {
     id: id ?? undefined,
     modelId: model ?? undefined,

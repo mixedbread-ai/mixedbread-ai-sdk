@@ -1,4 +1,4 @@
-import { createProviderToolFactoryWithOutputSchema } from "@ai-sdk/provider-utils";
+import { createProviderExecutedToolFactory } from "@ai-sdk/provider-utils";
 import { z } from "zod/v4";
 
 const hostedToolCallOutputSchema = z.looseObject({
@@ -51,7 +51,7 @@ export type MixedbreadListStoresArgs = {
   limit?: number;
 };
 
-const storeSearch = createProviderToolFactoryWithOutputSchema<
+const storeSearch = createProviderExecutedToolFactory<
   z.infer<typeof metadataFilterInputSchema> & { queries?: string[] },
   z.infer<typeof hostedToolCallOutputSchema>,
   MixedbreadStoreSearchArgs
@@ -63,7 +63,7 @@ const storeSearch = createProviderToolFactoryWithOutputSchema<
   outputSchema: hostedToolCallOutputSchema,
 });
 
-const storeGrep = createProviderToolFactoryWithOutputSchema<
+const storeGrep = createProviderExecutedToolFactory<
   z.infer<typeof metadataFilterInputSchema> & {
     pattern?: string;
     case_sensitive?: boolean;
@@ -79,7 +79,7 @@ const storeGrep = createProviderToolFactoryWithOutputSchema<
   outputSchema: hostedToolCallOutputSchema,
 });
 
-const storeListChunks = createProviderToolFactoryWithOutputSchema<
+const storeListChunks = createProviderExecutedToolFactory<
   z.infer<typeof metadataFilterInputSchema> & {
     rank_by?: string;
     direction?: "asc" | "desc";
@@ -95,7 +95,7 @@ const storeListChunks = createProviderToolFactoryWithOutputSchema<
   outputSchema: hostedToolCallOutputSchema,
 });
 
-const storeMetadataFacets = createProviderToolFactoryWithOutputSchema<
+const storeMetadataFacets = createProviderExecutedToolFactory<
   { store?: string | null },
   z.infer<typeof hostedToolCallOutputSchema>,
   MixedbreadStoreMetadataFacetsArgs
@@ -105,7 +105,7 @@ const storeMetadataFacets = createProviderToolFactoryWithOutputSchema<
   outputSchema: hostedToolCallOutputSchema,
 });
 
-const listStores = createProviderToolFactoryWithOutputSchema<
+const listStores = createProviderExecutedToolFactory<
   { cursor?: string | null },
   z.infer<typeof hostedToolCallOutputSchema>,
   MixedbreadListStoresArgs

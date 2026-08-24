@@ -1,9 +1,9 @@
 import {
   NoSuchModelError,
-  type EmbeddingModelV3,
-  type ImageModelV3,
-  type LanguageModelV3,
-  type ProviderV3,
+  type EmbeddingModelV4,
+  type ImageModelV4,
+  type LanguageModelV4,
+  type ProviderV4,
 } from "@ai-sdk/provider";
 import { MixedbreadChatLanguageModel } from "./mixedbread-chat-language-model";
 import type { MixedbreadChatModelId } from "./mixedbread-chat-options";
@@ -19,12 +19,12 @@ export {
   type MixedbreadProviderSettings,
 } from "./mixedbread-provider-core";
 
-export interface MixedbreadProvider extends ProviderV3 {
-  (modelId?: MixedbreadChatModelId): LanguageModelV3;
+export interface MixedbreadProvider extends ProviderV4 {
+  (modelId?: MixedbreadChatModelId): LanguageModelV4;
 
-  languageModel(modelId: MixedbreadChatModelId): LanguageModelV3;
+  languageModel(modelId: MixedbreadChatModelId): LanguageModelV4;
 
-  chat(modelId: MixedbreadChatModelId): LanguageModelV3;
+  chat(modelId: MixedbreadChatModelId): LanguageModelV4;
 
   tools: typeof mixedbreadTools;
 }
@@ -36,24 +36,24 @@ export function createMixedbread(
 
   const createLanguageModel = (
     modelId: MixedbreadChatModelId = "toast-1",
-  ): LanguageModelV3 => new MixedbreadChatLanguageModel(modelId, config);
+  ): LanguageModelV4 => new MixedbreadChatLanguageModel(modelId, config);
 
   const provider = Object.assign(
-    (modelId?: MixedbreadChatModelId): LanguageModelV3 => {
+    (modelId?: MixedbreadChatModelId): LanguageModelV4 => {
       if (new.target) {
         rejectConstructorCall();
       }
       return createLanguageModel(modelId);
     },
     {
-      specificationVersion: "v3",
+      specificationVersion: "v4",
       languageModel: createLanguageModel,
       chat: createLanguageModel,
       tools: mixedbreadTools,
-      embeddingModel: (modelId: string): EmbeddingModelV3 => {
+      embeddingModel: (modelId: string): EmbeddingModelV4 => {
         throw new NoSuchModelError({ modelId, modelType: "embeddingModel" });
       },
-      imageModel: (modelId: string): ImageModelV3 => {
+      imageModel: (modelId: string): ImageModelV4 => {
         throw new NoSuchModelError({ modelId, modelType: "imageModel" });
       },
     } as const,

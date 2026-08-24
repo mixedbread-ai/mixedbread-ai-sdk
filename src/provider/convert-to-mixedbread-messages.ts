@@ -1,7 +1,7 @@
 import { UnsupportedFunctionalityError } from "@ai-sdk/provider";
 import type {
-  LanguageModelV3Prompt,
-  LanguageModelV3ToolResultOutput,
+  LanguageModelV4Prompt,
+  LanguageModelV4ToolResultOutput,
 } from "@ai-sdk/provider";
 
 export type MixedbreadMessage =
@@ -19,7 +19,7 @@ export type MixedbreadMessage =
     }
   | { role: "tool"; tool_call_id: string; content: string };
 
-function toolResultOutputToText(output: LanguageModelV3ToolResultOutput): string {
+function toolResultOutputToText(output: LanguageModelV4ToolResultOutput): string {
   switch (output.type) {
     case "text":
     case "error-text":
@@ -40,7 +40,7 @@ function toolResultOutputToText(output: LanguageModelV3ToolResultOutput): string
 }
 
 export function convertToMixedbreadMessages(
-  prompt: LanguageModelV3Prompt,
+  prompt: LanguageModelV4Prompt,
 ): MixedbreadMessage[] {
   const messages: MixedbreadMessage[] = [];
 
