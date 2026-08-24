@@ -1,4 +1,4 @@
-# @mixedbread/ai-sdk
+# @mixedbread/ai-sdk-provider
 
 Mixedbread provider for the [Vercel AI SDK](https://ai-sdk.dev). Gives you the
 `toast-1` language model with server-side retrieval over your Stores.
@@ -6,7 +6,7 @@ Mixedbread provider for the [Vercel AI SDK](https://ai-sdk.dev). Gives you the
 ## Installation
 
 ```bash
-pnpm add @mixedbread/ai-sdk ai
+pnpm add @mixedbread/ai-sdk-provider ai
 ```
 
 ## Setup
@@ -21,7 +21,7 @@ Get your API key from the [Mixedbread Platform](https://platform.mixedbread.com/
 
 ```typescript
 import { generateText } from "ai";
-import { mixedbread } from "@mixedbread/ai-sdk";
+import { mixedbread } from "@mixedbread/ai-sdk-provider";
 
 const { text } = await generateText({
   model: mixedbread("toast-1"),
@@ -36,21 +36,21 @@ const { text } = await generateText({
 
 | Your `ai` version | Import from |
 |-------------------|-------------|
-| `ai@6` (spec v3)  | `@mixedbread/ai-sdk` |
-| `ai@7` (spec v4)  | `@mixedbread/ai-sdk/v4` |
+| `ai@6` (spec v3)  | `@mixedbread/ai-sdk-provider` |
+| `ai@7` (spec v4)  | `@mixedbread/ai-sdk-provider/v4` |
 
 Both entry points expose the same `createMixedbread`, `mixedbread`, and
 `mixedbread.tools` API and hit the same endpoint; only the language model
 specification version differs.
 
 ```typescript
-import { mixedbread } from "@mixedbread/ai-sdk/v4";
+import { mixedbread } from "@mixedbread/ai-sdk-provider/v4";
 ```
 
 ### Custom instance
 
 ```typescript
-import { createMixedbread } from "@mixedbread/ai-sdk";
+import { createMixedbread } from "@mixedbread/ai-sdk-provider";
 
 const mixedbread = createMixedbread({
   apiKey: process.env.MXBAI_API_KEY,
@@ -75,7 +75,7 @@ no `execute` to write and no extra round trip.
 
 ```typescript
 import { generateText } from "ai";
-import { mixedbread } from "@mixedbread/ai-sdk";
+import { mixedbread } from "@mixedbread/ai-sdk-provider";
 
 const { text, staticToolCalls } = await generateText({
   model: mixedbread("toast-1"),
@@ -114,7 +114,7 @@ back on the next call.
 ```typescript
 import { generateText, tool } from "ai";
 import { z } from "zod";
-import { mixedbread } from "@mixedbread/ai-sdk";
+import { mixedbread } from "@mixedbread/ai-sdk-provider";
 
 await generateText({
   model: mixedbread("toast-1"),
