@@ -185,6 +185,27 @@ pnpm build
 pnpm smoke         # live check, needs .env with MXBAI_API_KEY
 ```
 
+## Releasing
+
+Releases are published to npm by GitHub Actions when a `v*.*.*` tag is pushed.
+
+```bash
+# 1. bump the version on main
+npm version patch   # or minor / major
+
+# 2. push the commit and the tag
+git push origin main --follow-tags
+```
+
+The [release workflow](.github/workflows/release.yml) refuses to publish unless
+the tagged commit is on `main` and the tag matches the `version` in
+`package.json`. It then runs typecheck, tests and the build before
+`npm publish --access public --provenance`, and opens a GitHub release with
+generated notes.
+
+Every push and pull request against `main` runs
+[CI](.github/workflows/ci.yml) (typecheck, tests, build) on Node 20, 22 and 24.
+
 ## Resources
 
 - [Mixedbread Documentation](https://mixedbread.com/docs)
