@@ -215,28 +215,24 @@ Every push and pull request against `main` runs
 
 ### npm authentication
 
-npm's trusted publishing is configured per package on npmjs.com, and a package
-has to exist before it can be configured. The first publish therefore needs a
-token, and later ones do not.
+Releases authenticate with npm over OIDC
+[trusted publishing](https://docs.npmjs.com/trusted-publishers/), configured for
+this package at npmjs.com against the `mixedbread-ai/mixedbread-ai-sdk`
+repository and the `release.yml` workflow. There is no long-lived npm token, and
+the workflow needs none.
 
-**Phase 1 — bootstrap.** Create a granular access token on npmjs.com with
-read/write on the `@mixedbread` scope, and add it as the `NPM_TOKEN` repository
-secret. The workflow authenticates with it and still generates provenance;
-provenance comes from `--provenance` plus `id-token: write`, not from trusted
-publishing.
+Do not add an `NPM_TOKEN` secret back or reintroduce `NODE_AUTH_TOKEN` in the
+publish step. An unset secret resolves to an empty string, which `setup-node`
+writes into `.npmrc` as the auth token; npm then prefers that over OIDC and
+fails with `E401`.
 
-**Phase 2 — trusted publishing.** Once the package exists, open it on npmjs.com,
-add a trusted publisher for GitHub Actions with organization `mixedbread-ai`,
-repository `mixedbread-ai-sdk` and workflow `release.yml` (no environment).
-Configurations created after May 2026 also need `npm publish` selected under
-allowed actions. Then delete the `NPM_TOKEN` secret and drop the
-`env: NODE_AUTH_TOKEN` block from the publish step.
+Provenance is independent of this. It comes from `--provenance` plus
+`id-token: write` on a public repository, and worked the same way when the first
+release still used a token.
 
-Releases then authenticate over OIDC with no long-lived secret, which is where
-[mgrep](https://github.com/mixedbread-ai/mgrep) ended up. npm is separately
-restricting tokens that bypass 2FA for direct publishing, so phase 2 is the
-intended destination rather than an optimisation. Note that trusted publishing
-requires npm >= 11.5.1 — the release workflow runs Node 24 for that reason.
+Trusted publishing requires npm >= 11.5.1, which is why the release workflow
+runs Node 24.
+
 ### Spec version dist-tags
 
 `latest` always points at the newest Language Model Specification the package
