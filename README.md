@@ -237,6 +237,29 @@ Releases then authenticate over OIDC with no long-lived secret, which is where
 restricting tokens that bypass 2FA for direct publishing, so phase 2 is the
 intended destination rather than an optimisation. Note that trusted publishing
 requires npm >= 11.5.1 — the release workflow runs Node 24 for that reason.
+### Spec version dist-tags
+
+`latest` always points at the newest Language Model Specification the package
+supports. Older specifications stay installable on a dist-tag rather than a
+subpath, which is how `@ai-sdk/*` and most community providers handle it:
+
+| Tag | Spec | `ai` version |
+|-----|------|--------------|
+| `latest` | v4 | `ai@7` |
+| `ai-v6` | v3 | `ai@6` |
+
+The `ai-v6` tag is pinned to `0.1.0` and must not be moved by a normal release —
+`npm version` and the release workflow only ever update `latest`. Repointing it
+would hand spec-v4 code to `ai@6` users.
+
+Dist-tags are set by hand, not by CI, so they need npm credentials on your own
+machine. Publishing runs on `NPM_TOKEN` inside Actions, which does not log you
+in locally — `npm dist-tag add` fails with `E401` until you run `npm login`:
+
+```bash
+npm login
+npm dist-tag add @mixedbread/ai-sdk-provider@0.1.0 ai-v6
+```
 
 ## Resources
 
