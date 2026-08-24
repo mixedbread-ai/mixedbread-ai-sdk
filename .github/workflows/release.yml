@@ -69,13 +69,13 @@ jobs:
       - name: Build
         run: pnpm run build
 
-      # Uses npm OIDC trusted publishing when it is configured for the package.
-      # NODE_AUTH_TOKEN is the fallback and is required for the very first publish,
-      # since trusted publishing cannot be set up before a package exists on npm.
+      # Authenticates over npm OIDC trusted publishing, configured for this
+      # package at npmjs.com; there is no long-lived token. Do not reintroduce
+      # NODE_AUTH_TOKEN: an unset secret resolves to an empty string, which
+      # setup-node writes into .npmrc as the auth token and npm then prefers
+      # over OIDC, failing with E401.
       - name: Publish to npm
         run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   github-release:
     name: Create GitHub release
