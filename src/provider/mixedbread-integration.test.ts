@@ -64,15 +64,14 @@ describe("ai@7 (spec v4)", () => {
     const result = await generateText({
       model: mixedbread("toast-1"),
       prompt: "Which bread?",
-      tools: { storeSearch: mixedbread.tools.storeSearch({ storeIdentifiers: ["docs"] }) },
     });
 
     expect(mixedbread("toast-1").specificationVersion).toBe("v4");
     expect(result.text).toBe("Sourdough.");
     expect(result.reasoningText).toBe("Checking the store.");
     expect(result.usage.inputTokens).toBe(12);
-    expect(result.staticToolCalls.map((call) => call.toolName)).toStrictEqual([
-      "storeSearch",
+    expect(result.dynamicToolCalls.map((call) => call.toolName)).toStrictEqual([
+      "store_search",
     ]);
     expect(result.providerMetadata?.mixedbread.title).toBe("Bread question");
   });
@@ -101,20 +100,6 @@ describe("ai@7 (spec v4)", () => {
 
     expect(chunks.join("")).toBe("Sourdough.");
     expect(await result.finishReason).toBe("stop");
-  });
-});
-
-describe("hosted tool factories", () => {
-  const mixedbread = createMixedbread({ apiKey: "test-key", fetch: jsonFetch });
-
-  it("can be declared with no arguments", () => {
-    // the underlying provider-utils factory destructures its argument, so a bare
-    // call used to throw "Cannot destructure property 'onInputStart'"
-    expect(() => mixedbread.tools.listStores()).not.toThrow();
-    expect(() => mixedbread.tools.storeSearch()).not.toThrow();
-    expect(() => mixedbread.tools.storeGrep()).not.toThrow();
-    expect(() => mixedbread.tools.storeListChunks()).not.toThrow();
-    expect(() => mixedbread.tools.storeMetadataFacets()).not.toThrow();
   });
 });
 

@@ -16,14 +16,12 @@ import {
   combineHeaders,
   createEventSourceResponseHandler,
   createJsonResponseHandler,
-  createToolNameMapping,
   generateId as generateIdDefault,
   isParsableJson,
   parseProviderOptions,
   postJsonToApi,
   type FetchFunction,
   type ParseResult,
-  type ToolNameMapping,
 } from "@ai-sdk/provider-utils";
 import {
   mixedbreadChatChunkSchema,
@@ -34,10 +32,6 @@ import {
 } from "./mixedbread-api-types";
 import { convertToMixedbreadMessages } from "./convert-to-mixedbread-messages";
 import { getResponseMetadata } from "./get-response-metadata";
-import {
-  hostedToolTypeToToolName,
-  mixedbreadProviderToolNames,
-} from "./mixedbread-hosted-tools";
 import { mixedbreadFailedResponseHandler } from "./mixedbread-error";
 import {
   mixedbreadProviderOptions,
@@ -120,13 +114,10 @@ function hostedToolCallInput(item: MixedbreadHostedToolCall): string {
   return JSON.stringify(input);
 }
 
-function hostedToolName(
-  item: MixedbreadHostedToolCall,
-  toolNameMapping: ToolNameMapping,
-): string {
-  return toolNameMapping.toCustomToolName(
-    hostedToolTypeToToolName[item.type] ?? item.type,
-  );
+// Hosted executions arrive typed like "store_search_call"; report them under
+// the bare tool name ("store_search").
+function hostedToolName(item: MixedbreadHostedToolCall): string {
+  return item.type.replace(/_call$/, "");
 }
 
 export class MixedbreadChatLanguageModelBase {
@@ -176,11 +167,7 @@ export class MixedbreadChatLanguageModelBase {
       schema: mixedbreadProviderOptions,
     });
 
-    const {
-      tools,
-      toolChoice,
-      toolWarnings,
-    } = await prepareTools({
+    const { tools, toolChoice, toolWarnings } = prepareTools({
       tools: options.tools,
       toolChoice: options.toolChoice,
     });
@@ -206,20 +193,10 @@ export class MixedbreadChatLanguageModelBase {
     };
   }
 
-  private toolNameMapping(
-    tools: LanguageModelV4CallOptions["tools"],
-  ): ToolNameMapping {
-    return createToolNameMapping({
-      tools,
-      providerToolNames: mixedbreadProviderToolNames,
-    });
-  }
-
   async doGenerate(
     options: LanguageModelV4CallOptions,
   ): Promise<LanguageModelV4GenerateResult> {
     const { args: body, warnings } = await this.getArgs(options);
-    const toolNameMapping = this.toolNameMapping(options.tools);
 
     const {
       responseHeaders,
@@ -259,7 +236,7 @@ export class MixedbreadChatLanguageModelBase {
         reasoningCursor = offset;
       }
 
-      const toolName = hostedToolName(item, toolNameMapping);
+      const toolName = hostedToolName(item);
       content.push({
         type: "tool-call",
         toolCallId: item.id,
@@ -317,7 +294,6 @@ export class MixedbreadChatLanguageModelBase {
   ): Promise<LanguageModelV4StreamResult> {
     const { args, warnings } = await this.getArgs(options);
     const body = { ...args, stream: true };
-    const toolNameMapping = this.toolNameMapping(options.tools);
     const providerMetadata = this.providerMetadata.bind(this);
     const generateId = this.config.generateId ?? generateIdDefault;
 
@@ -403,7 +379,7 @@ export class MixedbreadChatLanguageModelBase {
             }
 
             for (const item of value.hosted_tool_calls ?? []) {
-              const toolName = hostedToolName(item, toolNameMapping);
+              const toolName = hostedToolName(item);
 
               if (isActiveReasoning) {
                 controller.enqueue({

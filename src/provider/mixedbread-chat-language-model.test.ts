@@ -241,7 +241,30 @@ describe("doGenerate", () => {
     ]);
   });
 
-  it("declares hosted store tools and reports their executions", async () => {
+  it("warns about provider tools instead of sending them", async () => {
+    const model = provider(
+      jsonFetch({ choices: [{ message: { content: "hi" }, finish_reason: "stop" }] }),
+    )("toast-1");
+
+    const result = await model.doGenerate({
+      prompt,
+      tools: [
+        {
+          type: "provider",
+          id: "mixedbread.store_search",
+          name: "storeSearch",
+          args: {},
+        },
+      ],
+    });
+
+    expect(lastRequest.body).not.toHaveProperty("tools");
+    expect(result.warnings).toStrictEqual([
+      { type: "unsupported", feature: "tool mixedbread.store_search" },
+    ]);
+  });
+
+  it("reports server-side executions from the response", async () => {
     const mixedbread = provider(
       jsonFetch({
         choices: [
@@ -255,11 +278,10 @@ describe("doGenerate", () => {
         ],
         hosted_tool_calls: [
           {
-            type: "store_search_call",
+            type: "web_search_call",
             id: "srch_1",
             status: "completed",
             queries: ["files"],
-            store: "docs",
             reasoning_offset: 12,
             results: [{ chunk_index: 0 }],
           },
@@ -267,42 +289,21 @@ describe("doGenerate", () => {
       }),
     );
 
-    const result = await mixedbread("toast-1").doGenerate({
-      prompt,
-      tools: [
-        {
-          type: "provider",
-          id: "mixedbread.store_search",
-          name: "storeSearch",
-          args: { storeIdentifiers: ["docs"], maxNumResults: 5, citations: true },
-        },
-      ],
-      toolChoice: { type: "tool", toolName: "storeSearch" },
-    });
-
-    expect(lastRequest.body.tools).toStrictEqual([
-      {
-        type: "store_search",
-        store_identifiers: ["docs"],
-        max_num_results: 5,
-        citations: true,
-      },
-    ]);
-    expect(lastRequest.body.tool_choice).toStrictEqual({ type: "store_search" });
+    const result = await mixedbread("toast-1").doGenerate({ prompt });
 
     expect(result.content).toStrictEqual([
       { type: "reasoning", text: "Let me look." },
       {
         type: "tool-call",
         toolCallId: "srch_1",
-        toolName: "storeSearch",
-        input: '{"queries":["files"],"store":"docs"}',
+        toolName: "web_search",
+        input: '{"queries":["files"]}',
         providerExecuted: true,
       },
       {
         type: "tool-result",
         toolCallId: "srch_1",
-        toolName: "storeSearch",
+        toolName: "web_search",
         result: expect.objectContaining({ id: "srch_1", status: "completed" }),
         isError: false,
       },
@@ -412,17 +413,7 @@ describe("doStream", () => {
       ]),
     )("toast-1");
 
-    const { stream } = await model.doStream({
-      prompt,
-      tools: [
-        {
-          type: "provider",
-          id: "mixedbread.store_search",
-          name: "store_search",
-          args: {},
-        },
-      ],
-    });
+    const { stream } = await model.doStream({ prompt });
     const parts = await collect(stream);
 
     expect(lastRequest.body.stream).toBe(true);

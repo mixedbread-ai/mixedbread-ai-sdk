@@ -15,12 +15,3 @@ export type {
   MixedbreadChatModelId,
   MixedbreadProviderOptions,
 } from "./provider/mixedbread-chat-options";
-
-export { mixedbreadTools } from "./provider/mixedbread-hosted-tools";
-export type {
-  MixedbreadListStoresArgs,
-  MixedbreadStoreGrepArgs,
-  MixedbreadStoreListChunksArgs,
-  MixedbreadStoreMetadataFacetsArgs,
-  MixedbreadStoreSearchArgs,
-} from "./provider/mixedbread-hosted-tools";

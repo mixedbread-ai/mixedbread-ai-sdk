@@ -1,7 +1,7 @@
 # @mixedbread/ai-sdk-provider
 
 Mixedbread provider for the [Vercel AI SDK](https://ai-sdk.dev). Gives you the
-`toast-1` language model with server-side retrieval over your Stores.
+`toast-1` language model.
 
 ## Installation
 
@@ -50,9 +50,9 @@ pnpm add @mixedbread/ai-sdk-provider ai
 pnpm add @mixedbread/ai-sdk-provider@ai-v6 ai@6
 ```
 
-Both lines expose the same `createMixedbread`, `mixedbread` and
-`mixedbread.tools` API and hit the same endpoint; only the specification
-version differs. The `ai-v6` line is maintenance-only.
+Both lines expose the same `createMixedbread` and `mixedbread` API and hit the
+same endpoint; only the specification version differs. The `ai-v6` line is
+maintenance-only.
 
 ### Custom instance
 
@@ -74,49 +74,16 @@ const mixedbread = createMixedbread({
 | `fetch` | `FetchFunction` | Custom fetch, e.g. for testing or proxying |
 | `generateId` | `() => string` | ID generator for tool calls that arrive without one |
 
-## Hosted store tools
-
-`toast-1` can search your Stores server-side: you declare the tool, Mixedbread
-runs it inside the completion and streams the calls and results back. There is
-no `execute` to write and no extra round trip.
-
-```typescript
-import { generateText } from "ai";
-import { mixedbread } from "@mixedbread/ai-sdk-provider";
-
-const { text, staticToolCalls } = await generateText({
-  model: mixedbread("toast-1"),
-  prompt: "What does our handbook say about on-call? Cite your sources.",
-  tools: {
-    storeSearch: mixedbread.tools.storeSearch({
-      storeIdentifiers: ["handbook"],
-      maxNumResults: 10,
-      citations: true,
-    }),
-  },
-});
-```
-
-| Tool | Purpose | Options |
-|------|---------|---------|
-| `storeSearch` | Semantic search over stores | `storeIdentifiers`, `maxNumResults`, `filters`, `scoreThreshold`, `citations` |
-| `storeGrep` | Regex match over chunk text | `storeIdentifiers`, `maxNumResults`, `filters`, `citations` |
-| `storeListChunks` | Metadata-driven chunk listing | `storeIdentifiers`, `maxNumResults`, `filters`, `citations` |
-| `storeMetadataFacets` | Which metadata fields and values exist | `storeIdentifiers`, `filters`, `maxValuesPerField` |
-| `listStores` | Paginated listing of your stores | `limit` |
-
-Leave `storeIdentifiers` off to let the model pick a store per call — pair that
-with `listStores` so it can discover what it may name.
-
-Hosted executions arrive as regular AI SDK tool calls and tool results marked
-`providerExecuted: true`, interleaved with the model's reasoning in the order
-they ran.
-
 ## Function tools
 
 Client-executed tools work as they do with any other provider. The completion
 ends with `finish_reason: "tool_calls"`; run the functions and send the results
 back on the next call.
+
+Anything the completion runs server-side arrives as regular AI SDK tool calls
+and tool results marked `providerExecuted: true`, interleaved with the model's
+reasoning in the order they ran. There is nothing to declare and no `execute`
+to write for those.
 
 ```typescript
 import { generateText, tool } from "ai";
@@ -149,7 +116,6 @@ await generateText({
     mixedbread: {
       previousCompletionId: "cmpl_abc123",
       store: true,
-      include: ["store_search_call.results"],
     },
   },
 });
@@ -160,10 +126,10 @@ await generateText({
 | `store` | `boolean` | Persist the completion for later retrieval (API default: `true`) |
 | `previousCompletionId` | `string` | Continue a stored conversation and restore its full model context |
 | `terminalToolName` | `string` | Function tool whose answer argument closes the stored transcript |
-| `maxToolCalls` | `number` | Cap on hosted retrieval calls in one completion |
+| `maxToolCalls` | `number` | Cap on server-side tool calls in one completion |
 | `parallelToolCalls` | `boolean` | Allow several tool calls per turn (default `true`) |
 | `metadata` | `Record<string, string>` | Arbitrary string metadata stored with the completion |
-| `include` | `string[]` | Extra response fields, e.g. `store_search_call.results` |
+| `include` | `string[]` | Extra response fields on server-side tool calls |
 
 ### Provider metadata
 

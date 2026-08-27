@@ -7,7 +7,6 @@ import {
 } from "@ai-sdk/provider";
 import { MixedbreadChatLanguageModel } from "./mixedbread-chat-language-model";
 import type { MixedbreadChatModelId } from "./mixedbread-chat-options";
-import { mixedbreadTools } from "./mixedbread-hosted-tools";
 import {
   mixedbreadChatConfig,
   rejectConstructorCall,
@@ -25,8 +24,6 @@ export interface MixedbreadProvider extends ProviderV4 {
   languageModel(modelId: MixedbreadChatModelId): LanguageModelV4;
 
   chat(modelId: MixedbreadChatModelId): LanguageModelV4;
-
-  tools: typeof mixedbreadTools;
 }
 
 export function createMixedbread(
@@ -49,7 +46,6 @@ export function createMixedbread(
       specificationVersion: "v4",
       languageModel: createLanguageModel,
       chat: createLanguageModel,
-      tools: mixedbreadTools,
       embeddingModel: (modelId: string): EmbeddingModelV4 => {
         throw new NoSuchModelError({ modelId, modelType: "embeddingModel" });
       },
