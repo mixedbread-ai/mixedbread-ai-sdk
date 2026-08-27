@@ -1,6 +1,6 @@
 {
   "name": "@mixedbread/ai-sdk-provider",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Mixedbread provider for the Vercel AI SDK - the toast-1 language model with hosted store retrieval",
   "type": "module",
   "sideEffects": false,
